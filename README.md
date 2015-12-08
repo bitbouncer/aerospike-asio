@@ -14,7 +14,9 @@ mkdir source
 cd source
 git clone https://github.com/bitbouncer/aerospike-asio.git
 aerospike-asio\windows_x64_vc12_setup_3rd_part.bat
-aerospike-asio\rebuild_win64_vc12.bat
+cd aerospike-asio
+rebuild_win64_vc12.bat
+cd ..
 ```
 
 ## Ubuntu 14 x64:
@@ -32,7 +34,9 @@ mkdir source
 cd source
 git clone https://github.com/bitbouncer/aerospike-asio.git
 bash aerospike-asio/linux_setup_3rd_part.sh
-bash aerospike-asio/linux_rebuild_csi.sh
+cd aerospike-asio
+bash linux_rebuild_csi.sh
+cd ..
 ```
 
 ## Centos 7 x64:
@@ -50,7 +54,9 @@ mkdir source
 cd source
 git clone https://github.com/bitbouncer/aerospike-asio.git
 bash aerospike-asio/linux_setup_3rd_part.sh
-bash aerospike-asio/linux_rebuild_csi.sh
+cd aerospike-asio
+bash linux_rebuild_csi.sh
+cd ..
 ```
 
 
