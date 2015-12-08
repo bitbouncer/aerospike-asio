@@ -1,0 +1,120 @@
+SET(BOOST_PATH              ${CMAKE_SOURCE_DIR}/../boost_1_59_0)
+
+if(WIN32)
+SET(BOOST_PATH              ${CMAKE_SOURCE_DIR}/../boost_1_59_0)
+SET(OPENSSLPATH             ${CMAKE_SOURCE_DIR}/../openssl-1.0.1j)
+SET(LIBEVENTPATH            ${CMAKE_SOURCE_DIR}/../libevent-release-2.0.21-stable)
+SET(PTHREADPATH	    	    ${CMAKE_SOURCE_DIR}/../pthreads-w32-2-9-1-release)
+endif()
+
+include_directories(
+	${CMAKE_SOURCE_DIR} 
+	${BOOST_PATH} 
+    ${AEROSPIKE_ASIO_PATH}
+    ${LIBEVENTPATH}/include
+    ${PTHREADPATH}
+)
+
+if(WIN32)
+include_directories(
+${OPENSSLPATH}/inc32 
+${LIBEVENTPATH}/WIN32-Code
+)
+
+link_directories(
+    ${CMAKE_SOURCE_DIR}/lib/$(Platform)
+	${OPENSSLPATH}/out32
+    ${BOOST_PATH}/lib/$(Platform)/lib
+    ${LIBEVENTPATH}
+    ${PTHREADPATH}
+)
+
+SET(LIBRARY_OUTPUT_PATH     ${CMAKE_SOURCE_DIR}/lib/$(Platform))
+SET(EXECUTABLE_OUTPUT_PATH  ${CMAKE_SOURCE_DIR}/bin/$(Platform))
+endif() #WIN32
+
+link_directories(
+    ${CMAKE_SOURCE_DIR}/lib
+    ${BOOST_PATH}/stage/lib
+    ${OPENSSLPATH}	
+)
+
+if(__LINUX__)
+set(LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib)
+SET(EXECUTABLE_OUTPUT_PATH  ${CMAKE_SOURCE_DIR}/bin)
+
+#release build on linux
+SET(CMAKE_BUILD_TYPE Release)
+SET(CMAKE_CXX_FLAGS_DISTRIBUTION "-O3")
+SET(CMAKE_C_FLAGS_DISTRIBUTION "-O3")
+endif() #__LINUX__
+
+if(__DARWIN__)
+include_directories(/opt/X11/include)
+
+SET(LIBRARY_OUTPUT_PATH     ${CMAKE_SOURCE_DIR}/lib)
+SET(EXECUTABLE_OUTPUT_PATH  ${CMAKE_SOURCE_DIR}/bin)
+
+link_directories(
+    ${CMAKE_SOURCE_DIR}/lib
+    ${BOOST_PATH}/stage/lib
+	${OPENSSLPATH}
+    )
+endif() #END DARWIN
+
+#COMMON DEFINITIONS
+add_definitions(-D_FILE_OFFSET_BITS=64 -D_REENTRANT -DEXTERNAL_LOCKS -DMULTITHREAD)
+add_definitions(-DBOOST_ASIO_HAS_STD_CHRONO)
+
+if(WIN32)
+add_definitions(-DMARCH_x86_64) 
+#needed for win32 where autotools has not been run
+#min windows 7
+add_definitions(-D_WIN32_WINNT=0x0602) # win8.1 to get nthll 64 bit
+add_definitions(-DWINVER=0x0601)
+add_definitions(-DCF_WINDOWS)
+add_definitions(/MP)
+add_definitions(/bigobj)
+add_definitions(-D_UNICODE)
+add_definitions(-DUNICODE)
+add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+add_definitions(-D_SCL_SECURE_NO_WARNINGS)
+add_definitions(-DSECURITY_WIN32)
+add_definitions(/wd4996) #'strdup': The POSIX name for this item is deprecated
+add_definitions(/wd4197) # 'cf_atomic32' : top-level volatile in cast is ignored
+add_definitions(/wd4200) #nonstandard extension used : zero-sized array in struct/union 
+endif()
+
+if(__LINUX__)
+add_definitions(-D__LINUX__)
+add_definitions(-fPIC)
+#if(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "4.8.0")
+add_definitions(-std=c++11)
+#endif()
+add_definitions(-DBOOST_LOG_DYN_LINK)
+add_definitions(-DBOOST_LOG_USE_NATIVE_SYSLOG)
+add_definitions(-Wno-deprecated)
+endif()
+
+if(__DARWIN__)
+SET (LIBRARY_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/lib)
+add_definitions(-D__DARWIN__)
+add_definitions(-fPIC)
+add_definitions(-std=c++11)
+add_definitions(-DBOOST_LOG_DYN_LINK)
+include_directories(/opt/X11/include)
+link_directories(${BOOST_PATH}/stage/lib ${CMAKE_SOURCE_DIR}/lib)
+endif()
+
+if(WIN32)
+set(EXT_LIBS libeay32 ssleay32 Ws2_32) 
+endif()
+
+if(__LINUX__)
+set(EXT_LIBS boost_log_setup boost_log boost_date_time boost_timer boost_thread boost_system boost_program_options boost_filesystem boost_regex boost_chrono boost_iostreams crypto rt pthread z c)
+endif()
+
+#most likely wrong since I don't have a mac anymore...
+if(__DARWIN__)
+set(EXT_LIBS boost_log_setup boost_log boost_date_time boost_timer boost_thread boost_system boost_filesystem boost_locale crypto ssl stdc++ pthread c)
+endif()
